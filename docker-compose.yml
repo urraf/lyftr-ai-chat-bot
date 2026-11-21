@@ -1,0 +1,38 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: lyftr-backend
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      LLM_API_KEYS: ${LLM_API_KEYS:-}
+      LLM_MODEL: ${LLM_MODEL:-groq/llama-3.1-8b-instant}
+      LLM_MODELS: ${LLM_MODELS:-}
+      DATABASE_URL: ${DATABASE_URL:-sqlite:////data/app.db}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000}
+      ENABLE_FAILURE_SIMULATION: ${ENABLE_FAILURE_SIMULATION:-true}
+      CACHE_TYPE: ${CACHE_TYPE:-disk}
+      CACHE_DIR: ${CACHE_DIR:-/data/llm_cache}
+      PORT: 8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - app-data:/data
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: lyftr-frontend
+    environment:
+      API_BASE_URL: ${FRONTEND_API_BASE_URL:-http://localhost:8000}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  app-data:

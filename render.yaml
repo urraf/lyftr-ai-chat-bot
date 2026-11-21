@@ -1,0 +1,23 @@
+# Render Blueprint: backend (Docker web service) + frontend (static site).
+services:
+  - type: web
+    name: lyftr-chat-backend
+    runtime: docker
+    rootDir: backend
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: LLM_API_KEYS
+        sync: false
+      - key: LLM_MODEL
+        value: groq/llama-3.1-8b-instant
+      - key: DATABASE_URL
+        value: sqlite:////data/app.db
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: ENABLE_FAILURE_SIMULATION
+        value: "true"
+      - key: CACHE_TYPE
+        value: disk
+      - key: CACHE_DIR
+        value: /data/llm_cache
