@@ -1,6 +1,6 @@
 # LLM Chatbot with Key Failover and Response Caching
 
-A small full-stack chat app: **React (Vite)** frontend, **FastAPI** backend, **LiteLLM** as the LLM gateway (Groq `llama-3.1-8b-instant` by default), and **SQLite** for session history.
+A small full-stack chat app: **React (Vite)** frontend, **FastAPI** backend, **LiteLLM** as the LLM gateway (Groq `openai/gpt-oss-20b` by default), and **SQLite** for session history.
 
 Every assistant reply shows where it came from (`LIVE_INFERENCE` / `LLM_CACHE`), the model, server latency and the input/output tokens for that request only. If an API key is rate-limited, out of quota or returns a 5xx, the backend moves on to the next key, so the user never sees a broken screen.
 
@@ -20,6 +20,8 @@ React (nginx :3000) ──HTTP/JSON──► FastAPI (:8000) ──► LLMGatewa
 | Frontend | `<FRONTEND_URL>` |
 | Backend API base | `<BACKEND_URL>` (try `<BACKEND_URL>/health`) |
 | Demo video | `<VIDEO_URL>` |
+
+> Hosted on Render's free tier: the backend sleeps after ~15 min idle, so the first request can take ~50 s. Free instances have no persistent disk, so on Render the SQLite file and cache reset on redeploy. Locally (`make up`) both live in the `app-data` volume and survive restarts.
 
 ---
 
@@ -60,7 +62,7 @@ VITE_API_BASE_URL=http://localhost:8000 npm run dev    # http://localhost:3000
 | Variable | Default | Meaning |
 |---|---|---|
 | `LLM_API_KEYS` | — | Comma-separated key pool (at least 2). Ids are `key_1`, `key_2`, … in this order |
-| `LLM_MODEL` | `groq/llama-3.1-8b-instant` | LiteLLM model name used by every key |
+| `LLM_MODEL` | `groq/openai/gpt-oss-20b` | LiteLLM model name used by every key |
 | `LLM_MODELS` | — | Optional per-key models, same order as the keys (lets the pool span providers, e.g. Groq + Gemini) |
 | `DATABASE_URL` | `sqlite:///./app.db` (`sqlite:////data/app.db` in Docker) | SQLite location |
 | `ALLOWED_ORIGINS` | `http://localhost:3000,http://localhost:5173` | CORS origins, comma-separated |
@@ -68,6 +70,7 @@ VITE_API_BASE_URL=http://localhost:8000 npm run dev    # http://localhost:3000
 | `CACHE_TYPE` | `disk` | `disk` (persistent), `local` (in-memory) or `none` |
 | `CACHE_DIR` / `CACHE_TTL_SECONDS` | `./.llm_cache` / `86400` | Disk cache location and TTL |
 | `DEFAULT_SYSTEM_PROMPT` | helpful-assistant prompt | Used when a session has not set its own |
+| `LLM_REASONING_EFFORT` | `low` | Reasoning effort for reasoning models like gpt-oss (keeps replies fast); empty disables |
 | `LLM_TIMEOUT_SECONDS`, `LLM_MAX_OUTPUT_TOKENS`, `LLM_TEMPERATURE`, `MAX_HISTORY_MESSAGES` | `30`, `1024`, `0.2`, `40` | Tuning |
 | `API_BASE_URL` (frontend container) / `VITE_API_BASE_URL` (build) | `http://localhost:8000` | Backend the UI talks to |
 

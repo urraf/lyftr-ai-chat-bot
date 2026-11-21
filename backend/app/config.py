@@ -8,7 +8,7 @@ from functools import lru_cache
 
 DEFAULT_SYSTEM_PROMPT = (
     "You are a helpful, concise assistant. Answer clearly and accurately. "
-    "Use earlier messages in this conversation as context."
+    "Use earlier messages in this conversation as context. Reply in plain text without Markdown formatting."
 )
 
 
@@ -50,6 +50,7 @@ class Settings:
     max_output_tokens: int = 1024
     temperature: float = 0.2
     max_history_messages: int = 40
+    reasoning_effort: str = "low"
 
     @property
     def cache_enabled(self) -> bool:
@@ -81,7 +82,7 @@ def build_key_pool(raw_keys: str | None, default_model: str, raw_models: str | N
 
 def load_settings() -> Settings:
     env = os.environ
-    default_model = env.get("LLM_MODEL", "groq/llama-3.1-8b-instant").strip()
+    default_model = env.get("LLM_MODEL", "groq/openai/gpt-oss-20b").strip()
     return Settings(
         keys=build_key_pool(env.get("LLM_API_KEYS"), default_model, env.get("LLM_MODELS")),
         database_path=parse_database_url(env.get("DATABASE_URL", "sqlite:///./app.db")),
@@ -95,6 +96,7 @@ def load_settings() -> Settings:
         max_output_tokens=int(env.get("LLM_MAX_OUTPUT_TOKENS", "1024")),
         temperature=float(env.get("LLM_TEMPERATURE", "0.2")),
         max_history_messages=int(env.get("MAX_HISTORY_MESSAGES", "40")),
+        reasoning_effort=env.get("LLM_REASONING_EFFORT", "low").strip().lower(),
     )
 
 

@@ -114,6 +114,13 @@ class LLMGateway:
         self.settings = settings
         self.pool = settings.keys
 
+    def _model_params(self, model: str) -> dict[str, Any]:
+        """Extra params for reasoning models (e.g. gpt-oss on Groq): keep reasoning short so
+        replies stay fast and cheap. Skipped for models that don't take it."""
+        if self.settings.reasoning_effort and "gpt-oss" in model:
+            return {"reasoning_effort": self.settings.reasoning_effort, "allowed_openai_params": ["reasoning_effort"]}
+        return {}
+
     async def complete(self, messages: list[dict[str, str]], simulate: dict[str, int] | None = None) -> CompletionResult:
         simulate = simulate or {}
         # When a failure is being simulated we skip the cache *read* so the request
@@ -128,6 +135,7 @@ class LLMGateway:
                     raise simulated_provider_error(simulate[key.key_id], key)
 
                 response = await litellm.acompletion(
+                    **self._model_params(key.model),
                     model=key.model,
                     messages=messages,
                     api_key=key.secret,

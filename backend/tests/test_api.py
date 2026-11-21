@@ -37,7 +37,7 @@ def test_chat_live_inference_contract(client):
     assert body["reply"]
     meta = body["metadata"]
     assert meta["resolution_source"] == "LIVE_INFERENCE"
-    assert meta["model"] == "groq/llama-3.1-8b-instant"
+    assert meta["model"] == "groq/openai/gpt-oss-20b"
     assert isinstance(meta["latency_ms"], int)
     assert isinstance(meta["input_tokens"], int) and meta["input_tokens"] > 0
     assert isinstance(meta["output_tokens"], int) and meta["output_tokens"] > 0

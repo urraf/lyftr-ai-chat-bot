@@ -46,7 +46,7 @@ def provider(monkeypatch):
 def make_client(tmp_path, provider):
     def _make(simulation: bool = True, keys: str = "sk-one,sk-two", cache_type: str = "local"):
         settings = Settings(
-            keys=build_key_pool(keys, "groq/llama-3.1-8b-instant", None),
+            keys=build_key_pool(keys, "groq/openai/gpt-oss-20b", None),
             database_path=str(tmp_path / "test.db"),
             allowed_origins=["http://localhost:3000"],
             enable_failure_simulation=simulation,
