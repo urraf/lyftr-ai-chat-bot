@@ -116,7 +116,7 @@ This uses LiteLLM's built-in cache (`litellm.cache = Cache(type="disk")`) and `c
 
 A cache hit is detected from `response._hidden_params["cache_hit"]`. On a hit I report `LLM_CACHE`, `key_id: null`, `fallback_attempts: 0`, and the token usage that was stored with the original response. A hit makes no network call, so it usually comes back in 2 to 5 ms, while a live Groq call takes 300 to 600 ms.
 
-![Same question in a new session, served from cache in 4 ms](docs/screenshots/cache-hit.png)
+![Same question in a new session, served from cache in a few ms](docs/screenshots/cache-hit.png)
 
 I picked disk over in-memory because the cache file sits in the same `/data` volume as the database, so it survives restarts. It's still just files on disk, no Redis.
 
@@ -193,7 +193,7 @@ curl -s $B/sessions/demo-4/messages
 # {"detail":"session not found"}   (the failed request was not stored)
 ```
 
-You can do the same thing from the UI. Open **Settings**, pick a failure from the dropdown, and the next messages go out with that header:
+You can do the same thing from the UI. Open the **⋮ menu** in the chat header, pick a failure from the dropdown, and the next messages go out with that header:
 
 ![Failover to key_2, then every key failing](docs/screenshots/failover.png)
 
@@ -206,7 +206,7 @@ curl -s -X POST $B/chat -H 'Content-Type: application/json' -d '{"session_id":"d
 curl -s $B/sessions/demo-5/messages
 ```
 
-**Per-message tokens.** Each request reports only its own usage. Two first messages of the same length in two new sessions both came back as 106 input tokens. In a single conversation, input tokens grow turn by turn because the history is part of the prompt (121 → 185 → 268 in the first screenshot), but each number belongs to that request only.
+**Per-message tokens.** Each request reports only its own usage. Two first messages of the same length in two new sessions both came back as 106 input tokens. In a single conversation, input tokens grow turn by turn because the history is part of the prompt (120 → 193 → 284 in the first screenshot), but each number belongs to that request only.
 
 **Validation**
 
@@ -232,11 +232,11 @@ Custom system prompts work too. They're saved per session:
 
 ## 6. Bonus features
 
+- **Messenger-style UI.** A familiar two-pane chat layout (chat list, bubbles with timestamps and ticks, light and dark themes) with the Lyftr logo, so it feels like a real chat app rather than a form.
 - **Failover dropdown in the UI.** It sends `X-Simulate-Failure` from the browser, so failover and the 503 message can be shown on the live site without curl.
 - **Disk cache in the data volume.** Cache hits still work after a restart.
 - **Per-key models (`LLM_MODELS`).** The pool can mix providers, e.g. a Groq key and a Gemini key, so one provider having a bad day doesn't take the app down.
 - **System prompt per session**, stored in SQLite.
 - **Light formatting for replies.** Bold, inline code and code blocks render properly, built as React elements rather than injected HTML, so model output can't inject markup.
-- **Dark mode**, following the OS setting.
 - **One frontend image for any backend.** The nginx container writes the backend URL into `/config.js` when it starts, so there's no rebuild per environment.
 - **Small hardening:** the backend runs as a non-root user, there's a Docker healthcheck, keys are hidden from logs and `repr`, and each exchange is saved in a single transaction.
