@@ -9,6 +9,29 @@ const SIMULATION_PRESETS = [
   { label: "All keys → 429 (expect 503)", value: "*=429" },
 ];
 
+// Minimal, XSS-safe formatting for model output: **bold**, `code` and ``` blocks.
+// Builds React elements (no innerHTML), everything else stays plain text.
+function renderInline(text, keyPrefix) {
+  return text.split(/(\*\*[^*\n]+\*\*|`[^`\n]+`)/g).map((part, i) => {
+    if (/^\*\*[^*]+\*\*$/.test(part)) return <strong key={`${keyPrefix}-${i}`}>{part.slice(2, -2)}</strong>;
+    if (/^`[^`]+`$/.test(part)) return <code key={`${keyPrefix}-${i}`}>{part.slice(1, -1)}</code>;
+    return part;
+  });
+}
+
+function FormattedText({ text }) {
+  const blocks = text.split(/```[\w-]*\n?/);
+  return blocks.map((block, i) =>
+    i % 2 === 1 ? (
+      <pre key={i} className="codeblock">
+        <code>{block.replace(/\n$/, "")}</code>
+      </pre>
+    ) : (
+      <span key={i}>{renderInline(block, i)}</span>
+    )
+  );
+}
+
 function Meta({ meta }) {
   const cached = meta.resolution_source === "LLM_CACHE";
   return (
@@ -165,7 +188,9 @@ export default function App() {
           m.role === "assistant" ? (
             <div key={m.id} className="row left">
               <div className="bubble assistant" data-testid="assistant-message">
-                <div className="text">{m.content}</div>
+                <div className="text">
+                  <FormattedText text={m.content} />
+                </div>
                 <Meta meta={m.meta} />
               </div>
             </div>
@@ -204,7 +229,7 @@ export default function App() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder="Type a message… (Enter to send, Shift+Enter for a new line)"
+            placeholder="Type a message…"
             rows={1}
             maxLength={4000}
             autoFocus
