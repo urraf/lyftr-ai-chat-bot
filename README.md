@@ -8,8 +8,8 @@ React talks to a FastAPI backend, and the backend uses LiteLLM to call Groq (`op
 
 ## 1. Live URLs
 
-- **Frontend:** _added after deploy_
-- **Backend:** _added after deploy_ (`/health` is a good first click)
+- **Frontend:** https://lyftr-chat-frontend-kc8d.onrender.com
+- **Backend API base:** https://lyftr-chat-backend-3g6y.onrender.com (try [`/health`](https://lyftr-chat-backend-3g6y.onrender.com/health))
 - **Demo video:** _added after recording_
 
 Both run on Render's free tier. If nobody has used the backend for ~15 minutes it goes to sleep, and the first request takes 30 to 50 seconds to wake it up. After that it's fast.
