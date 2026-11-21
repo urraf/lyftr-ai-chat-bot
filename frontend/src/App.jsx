@@ -76,7 +76,29 @@ export default function App() {
   const inputRef = useRef(null);
 
   useEffect(() => {
-    fetchHealth().then(setHealth).catch(() => setHealth({ status: "unreachable" }));
+    // Free-tier hosts sleep when idle and take ~30-60 s to wake up, so keep
+    // retrying for a while instead of giving up after the first failed check.
+    let cancelled = false;
+    let timer;
+    const started = Date.now();
+    const check = async () => {
+      try {
+        const h = await fetchHealth();
+        if (cancelled) return;
+        if (h && h.status === "ok") return setHealth(h);
+        throw new Error("not ready");
+      } catch {
+        if (cancelled) return;
+        const waking = Date.now() - started < 120000;
+        setHealth({ status: waking ? "waking" : "unreachable" });
+        if (waking) timer = setTimeout(check, 4000);
+      }
+    };
+    check();
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, []);
 
   useEffect(() => {
@@ -92,6 +114,7 @@ export default function App() {
     setSending(true);
     try {
       const data = await sendChat({ sessionId, message: text, systemPrompt, simulateFailure: simulate });
+      if (health?.status !== "ok") fetchHealth().then((h) => h?.status === "ok" && setHealth(h)).catch(() => {});
       setMessages((m) => [...m, { id: `${Date.now()}-a`, role: "assistant", content: data.reply, meta: data.metadata }]);
     } catch (err) {
       setMessages((m) => [...m, { id: `${Date.now()}-e`, role: "error", content: err.message }]);
@@ -132,11 +155,13 @@ export default function App() {
           </div>
         </div>
         <div className="header-right">
-          <span className={`status ${health?.status === "ok" ? "ok" : "bad"}`} title={API_BASE_URL}>
+          <span className={`status ${health?.status === "ok" ? "ok" : health?.status === "waking" ? "waking" : "bad"}`} title={API_BASE_URL}>
             {health == null
               ? "checking…"
               : health.status === "ok"
               ? `backend ok · ${health.keys_configured} keys · cache ${health.cache_enabled ? "on" : "off"}`
+              : health.status === "waking"
+              ? "waking up backend… (free tier, ~30 s)"
               : "backend unreachable"}
           </span>
           <button className="ghost" onClick={() => setShowSettings((s) => !s)} aria-expanded={showSettings}>

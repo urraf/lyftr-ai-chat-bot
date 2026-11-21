@@ -127,3 +127,4 @@ button.ghost { background: transparent; color: var(--text); border: 1px solid va
 .bubble.assistant .text code { background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; }
 .codeblock { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; overflow-x: auto; margin: 6px 0; white-space: pre; }
 .codeblock code { border: none !important; padding: 0 !important; background: none !important; }
+.status.waking::before { content: "●"; margin-right: 6px; color: #f5a524; animation: blink 1.2s infinite ease-in-out; }
