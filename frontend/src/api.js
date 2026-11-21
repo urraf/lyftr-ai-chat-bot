@@ -49,8 +49,3 @@ export async function sendChat({ sessionId, message, systemPrompt, simulateFailu
   if (!data || typeof data.reply !== "string") throw new Error("The backend returned an unexpected response.");
   return data;
 }
-
-export async function fetchHealth() {
-  const res = await fetch(`${API_BASE_URL}/health`);
-  return res.json();
-}

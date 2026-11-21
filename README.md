@@ -236,7 +236,6 @@ Custom system prompts work too. They're saved per session:
 - **Disk cache in the data volume.** Cache hits still work after a restart.
 - **Per-key models (`LLM_MODELS`).** The pool can mix providers, e.g. a Groq key and a Gemini key, so one provider having a bad day doesn't take the app down.
 - **System prompt per session**, stored in SQLite.
-- **Health badge** in the header: backend status, number of keys, cache on/off.
 - **Light formatting for replies.** Bold, inline code and code blocks render properly, built as React elements rather than injected HTML, so model output can't inject markup.
 - **Dark mode**, following the OS setting.
 - **One frontend image for any backend.** The nginx container writes the backend URL into `/config.js` when it starts, so there's no rebuild per environment.
