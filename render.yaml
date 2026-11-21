@@ -21,3 +21,13 @@ services:
         value: disk
       - key: CACHE_DIR
         value: /data/llm_cache
+
+  - type: web
+    name: lyftr-chat-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        sync: false   # e.g. https://lyftr-chat-backend.onrender.com
